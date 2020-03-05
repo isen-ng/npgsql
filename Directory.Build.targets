@@ -1,6 +1,12 @@
 ﻿<Project>
-  <ItemGroup>
+  <!-- See note in Npgsql.csproj on the version difference between .NET Framework and the rest -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <PackageReference Update="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net461' ">
     <PackageReference Update="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Update="System.Threading.Tasks.Extensions" Version="4.5.3" />
     <PackageReference Update="System.Memory" Version="4.5.3" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
@@ -29,4 +35,15 @@
     <PackageReference Update="Microsoft.Data.SqlClient" Version="1.0.19249.1" />
     <PackageReference Update="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.5" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- The following is necessary because:
+     a. We must depend on System.RuntimeCompilerServices.Unsafe 4.5.2, since we also depend on
+        System.Threading.Tasks.Extensions 4.5.3 which depends on that version (there's no newer version).
+     b. We depend on System.Text.Json, which depends on System.RuntimeCompilerServices.Unsafe 4.6.0.
+     c. Any mismatch causes assembly load errors in .NET Framework, requiring binding redirects and leading to
+        many issues and much confusion
+    -->
+    <NoWarn>NU1605</NoWarn>
+  </PropertyGroup>
 </Project>
